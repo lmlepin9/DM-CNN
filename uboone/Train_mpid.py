@@ -28,7 +28,6 @@ from torch.autograd import Variable
 from torch.utils.data import DataLoader, TensorDataset
 from torch.utils.data.dataset import random_split
 from torchvision import transforms
-from torchvision.datasets import MNIST
 
 from mpid_data import mpid_data
 from mpid_net import mpid_net, mpid_func
