@@ -114,7 +114,7 @@ for epoch in range(EPOCHS):
             
         print('\r Train Epoch: {}/{} [{}/{} ({:.0f}%)]\tLoss: {:.6f}'.format(
             epoch,
-            EPOCHS,
+            EPOCHS-1,
             batch_idx * len(x_batch), 
             len(train_loader.dataset),
             100. * batch_idx / len(train_loader), 
