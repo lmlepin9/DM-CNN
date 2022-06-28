@@ -14,7 +14,7 @@ def image_modify(img):
     return img_mod
 
 class MPID_Dataset(Dataset):
-    def __init__(self, input_file, image_tree, device, nclasses, plane=2, augment=False, verbose=False):
+    def __init__(self, input_file, image_tree, device, nclasses, plane=0, augment=False, verbose=False):
         self.plane=plane
         self.augment=augment
         self.verbose=verbose
