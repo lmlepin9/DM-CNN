@@ -18,10 +18,11 @@ from mpid_net import mpid_net_binary, mpid_func
 
 plt.ioff()
 torch.cuda.is_available()
+print(torch.cuda.is_available())
 
 from lib.config import config_loader
 MPID_PATH = os.path.dirname(mpid_data_binary.__file__)+"/../cfg"
-CFG = os.path.join(MPID_PATH,"inference_config_binary.cfg")
+CFG = os.path.join(MPID_PATH,"inference_config.cfg")
 
 # CFG = os.path.join("../../cfg","inference_config.cfg")
 cfg  = config_loader(CFG)
@@ -31,11 +32,11 @@ os.environ["CUDA_VISIBLE_DEVICES"]=cfg.GPUID
 
 #input_channel = "dt_overlay_"+mass
 #input_file = "dt_overlay_"+mass+"_larcv_cropped.root"
-#output_dir = "/hepgpu4-data2/lmlepin/outputs/"
-#output_file = output_dir + input_channel + "_MPID_scores_true_vertex_8441_steps.csv"
+output_dir = "/hepgpu4-data1/yuliia/training_output/"
+output_file = output_dir + "_MPID_scores_true_vertex_8441_steps.csv"
 
-input_file = "/hepgpu4-data2/lmlepin/datasets/standard_NuMI_run1_overlay_larcv_cropped.root"
-weight_file="/hepgpu4-data2/lmlepin/CNN_weights/binary_cosmics_FULL_weights/mpid_model_COSMICS_FULL_20210819-08_34_PM_epoch_4_batch_id_581_labels_2_title_0.001_AG_GN_final_2_classes_step_8441.pwf"
+input_file = "/hepgpu4-data1/yuliia/datasets/standard_NuMI_run1_overlay_larcv_cropped.root"
+weight_file="/hepgpu4-data1/yuliia/CNN_weights/mpid_model_COSMICS_FULL_20210819-08_34_PM_epoch_4_batch_id_581_labels_2_title_0.001_AG_GN_final_2_classes_step_8441.pwf"
 train_device = 'cuda' if torch.cuda.is_available() else 'cpu'
 
 mpid = mpid_net_binary.MPID()
@@ -45,12 +46,12 @@ mpid.eval()
 
 
 
-input_data = mpid_data_binary.MPID_Dataset(input_file, "image2d_image2d_binary_tree", train_device, plane=0, augment=cfg.augment)
+input_data = mpid_data_binary.MPID_Dataset(input_file, "image2d_image2d_tree", train_device, nclasses=3, plane=0, augment=cfg.augment)
 # Training and test data
-train_size = 13000
-test_size = 1154
-#train_size = int(0.9 * len(input_data))
-#test_size = int(0.1 * len(input_data))  
+#train_size = 13000
+#test_size = 1154
+train_size = int(0.9 * len(input_data))
+test_size = int(0.1 * len(input_data))  
 train_data, test_data = torch.utils.data.random_split(input_data,[train_size, test_size])
 
 print(np.shape(test_data)) 
