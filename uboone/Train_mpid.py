@@ -30,7 +30,7 @@ from torch.utils.data.dataset import random_split
 from torchvision import transforms
 
 from mpid_data import mpid_data
-from mpid_net import mpid_net, mpid_func
+from mpid_net import mpid_net, mpid_func, focal_loss
 
 title = cfg.name
 #if (len(sys.argv) > 1) : title = sys.argv[1]
@@ -50,17 +50,27 @@ print ("Using {} GPUs".format(torch.cuda.device_count()))
 train_device = 'cuda' if torch.cuda.is_available() else 'cpu'
 #test_device = 'cuda:1' if torch.cuda.is_available() else 'cpu'
 
-
-# Input data (contains both training data and test data)
-input_file = "/hepgpu4-data1/yuliia/MPID/larcv2/full_collection_plane_set.root"
-#train_file = "/scratch/ruian/training_data/MPID/larcv2/train_normal/larcv_7e19963d-1018-42b5-940c-48489454fa1e.root"
+# When dealing with input data that contains both training data and test data
+"""input_file = "/hepgpu4-data1/yuliia/MPID/larcv2/full_collection_plane_set.root"
 input_data = mpid_data.MPID_Dataset(input_file, "image2d_image2d_tree", train_device,nclasses=cfg.num_class, plane=0, augment=cfg.augment)
 
-# Training and test data
 train_size = int(0.9 * len(input_data))
 test_size = int(0.1 * len(input_data))  
+train_data, test_data = torch.utils.data.random_split(input_data,[train_size, test_size])"""
+#
+
+# When dealing with test data and training data separately
+train_file = "/hepgpu4-data1/yuliia/MPID/larcv2/train_set_collection_plane.root"
+train_data = mpid_data.MPID_Dataset(train_file, "image2d_image2d_tree", train_device, nclasses=cfg.num_class, plane=0, augment=cfg.augment)
+
+test_file = "/hepgpu4-data1/yuliia/MPID/larcv2/test_set_collection_plane.root"
+test_data = mpid_data.MPID_Dataset(test_file, "image2d_image2d_tree", train_device, nclasses=cfg.num_class, plane=0, augment=cfg.augment)
+
+train_size = len(train_data)
+test_size = len(test_data)  
+#
+
 print("train_size = ", train_size, "\ntest_size = ", test_size)
-train_data, test_data = torch.utils.data.random_split(input_data,[train_size, test_size])
 
 train_loader = DataLoader(dataset=train_data, batch_size=cfg.batch_size_train, shuffle=True)
 test_loader = DataLoader(dataset=test_data, batch_size=cfg.batch_size_test, shuffle=True)
@@ -73,6 +83,8 @@ mpid.cuda()
 #loss_fn = nn.BCELoss()
 loss_fn = nn.BCEWithLogitsLoss()
 
+# Implementing focal loss
+#loss_fn = focal_loss.FocalLoss()
 
 optimizer  = optim.Adam(mpid.parameters(), lr=cfg.learning_rate)#, weight_decay=0.001)
 train_step = mpid_func.make_train_step(mpid, loss_fn, optimizer)
@@ -123,7 +135,7 @@ for epoch in range(EPOCHS):
 
 
         if (batch_idx % cfg.test_every_step == 1 and cfg.run_test):
-            if (cfg.save_weights and epoch >= 2 and epoch <=5):
+            if (cfg.save_weights and epoch >= 0 and epoch <=5):
                 torch.save(mpid.state_dict(), "/hepgpu4-data1/yuliia/MPID_pytorch/weights/mpid_model_{}_epoch_{}_batch_id_{}_title_{}_step_{}.pwf".format(timestr(), epoch, batch_idx, title, step))  # CHANGED
 
             print ("Start eval on test sample.......@step..{}..@epoch..{}..@batch..{}".format(step,epoch, batch_idx))
