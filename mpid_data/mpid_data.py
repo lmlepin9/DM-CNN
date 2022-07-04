@@ -75,7 +75,9 @@ class MPID_Dataset(Dataset):
         else:
             pass
                                 
-        return (self.this_image, self.event_label)
+        return (self.this_image, self.event_label,
+                self.this_image_cpp_object.run(), self.this_image_cpp_object.subrun(), self.this_image_cpp_object.event())
+
 
     def __len__(self):
         #assert self.particle_image_chain.GetEntries()== self.particle_mctruth_chain.GetEntries()
