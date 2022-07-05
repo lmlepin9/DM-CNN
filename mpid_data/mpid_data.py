@@ -14,14 +14,14 @@ def image_modify(img):
     return img_mod
 
 class MPID_Dataset(Dataset):
-    def __init__(self, input_file, image_tree, device, nclasses, plane=0, augment=False, verbose=False):
+    def __init__(self, input_file, image_tree, device, nclasses, plane=2, augment=False, verbose=False):
         self.plane=plane
         self.augment=augment
         self.verbose=verbose
         self.nclasses=nclasses
         #self.particle_mctruth_chain = TChain(mctruth_tree)
         #self.particle_mctruth_chain.AddFile(input_file)
-
+        #print('Found',self.particle_mctruth_chain.GetEntries(),'entries!')
         self.particle_image_chain = TChain(image_tree)
         self.particle_image_chain.AddFile(input_file)
         if (device):
@@ -36,11 +36,12 @@ class MPID_Dataset(Dataset):
 
         self.particle_image_chain.GetEntry(ENTRY)
         self.this_image_cpp_object = self.particle_image_chain.image2d_image2d_branch
+        # self.this_image_cpp_object is <ROOT.larcv::EventImage2D object at 0xb5be5a0>
         self.this_image=larcv.as_ndarray(self.this_image_cpp_object.as_vector()[self.plane])
         # Image Thresholding
         self.this_image=image_modify(self.this_image)
 
-        #print (self.this_image)
+        #print (self.this_image).
         #print ("sum, ")
         #if (np.sum(self.this_image) < 9000):
         #    ENTRY+
@@ -74,6 +75,16 @@ class MPID_Dataset(Dataset):
             self.event_label[2]=1
         else:
             pass
+
+
+        # Print out particle information
+        #particle_chain = ROOT.TChain("particle_mctruth_tree")
+        #particle_chain.GetEntry(ENTRY)
+        #entry_data = particle_chain.particle_mctruth_branch
+        """particle_array = self.this_mctruth_cpp_object.as_vector()
+        engs = []
+        for index, particle in enumerate(particle_array):
+            engs.append(particle.energy_init)"""
                                 
         return (self.this_image, self.event_label,
                 self.this_image_cpp_object.run(), self.this_image_cpp_object.subrun(), self.this_image_cpp_object.event())
