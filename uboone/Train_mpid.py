@@ -12,6 +12,7 @@ from lib.utility import timestr
 BASE_PATH = os.path.realpath(__file__)
 BASE_PATH = os.path.dirname(BASE_PATH)
 CFG = os.path.join(BASE_PATH,"../cfg","simple_config.cfg")
+CFG = "/hepgpu4-data1/yuliia/MPID_repo/DM-CNN/cfg/simple_config.cfg"
 cfg  = config_loader(CFG)
 
 # Check GPU availability
@@ -74,6 +75,8 @@ print("train_size = ", train_size, "\ntest_size = ", test_size)
 
 train_loader = DataLoader(dataset=train_data, batch_size=cfg.batch_size_train, shuffle=True)
 test_loader = DataLoader(dataset=test_data, batch_size=cfg.batch_size_test, shuffle=True)
+
+print(np.shape(test_loader))
 
 mpid = mpid_net.MPID(dropout=cfg.drop_out)
 mpid.cuda()
