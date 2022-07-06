@@ -6,7 +6,7 @@ import torch.nn as nn
 
 class FocalLoss(nn.Module):
     def __init__(self, alpha=0.25, gamma=2):
-        super(self).__init__()
+        super(FocalLoss, self).__init__()
         self.alpha = alpha
         self.gamma = gamma
         return None
