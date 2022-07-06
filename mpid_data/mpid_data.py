@@ -14,7 +14,7 @@ def image_modify(img):
     return img_mod
 
 class MPID_Dataset(Dataset):
-    def __init__(self, input_file, image_tree, device, nclasses, plane=2, augment=False, verbose=False):
+    def __init__(self, input_file, image_tree, device, nclasses, plane=0, augment=False, verbose=False):
         self.plane=plane
         self.augment=augment
         self.verbose=verbose
@@ -88,7 +88,6 @@ class MPID_Dataset(Dataset):
                                 
         return (self.this_image, self.event_label,
                 self.this_image_cpp_object.run(), self.this_image_cpp_object.subrun(), self.this_image_cpp_object.event())
-
 
     def __len__(self):
         #assert self.particle_image_chain.GetEntries()== self.particle_mctruth_chain.GetEntries()

@@ -24,7 +24,6 @@ from lib.config import config_loader
 MPID_PATH = os.path.dirname(mpid_data.__file__)+"/../cfg"
 CFG = os.path.join(MPID_PATH,"inference_config.cfg")
 CFG = "/hepgpu4-data1/yuliia/MPID_repo/DM-CNN/cfg/inference_config.cfg"
-print(CFG)
 
 # CFG = os.path.join("../../cfg","inference_config.cfg")
 cfg  = config_loader(CFG)
@@ -35,10 +34,12 @@ os.environ["CUDA_VISIBLE_DEVICES"]=cfg.GPUID
 #input_channel = "dt_overlay_"+mass
 #input_file = "dt_overlay_"+mass+"_larcv_cropped.root"
 output_dir = "/hepgpu4-data1/yuliia/training_output/"
-output_file = output_dir + "MPID_scores_gamma_true_vertex_8441_steps.csv"
+output_file = output_dir + "MPID_scores_gamma_additional_6625_steps.csv"
+
+input_csv = pd.read_csv("/hepgpu4-data1/yuliia/spg_photon.csv")
 
 input_file = "/hepgpu4-data1/yuliia/singularity/images/gamma_larcv_collection_plane_cropped.root"
-weight_file="/hepgpu4-data1/yuliia/MPID_pytorch/weights/mpid_model_20220628-04_46_PM_epoch_4_batch_id_1341_title_0.001_AG_GN_final_step_6725.pwf"
+weight_file="/hepgpu4-data1/yuliia/MPID_pytorch/weights/mpid_model_20220628-04_43_PM_epoch_4_batch_id_1241_title_0.001_AG_GN_final_step_6625.pwf"
 train_device = 'cuda' if torch.cuda.is_available() else 'cpu'
 
 mpid = mpid_net.MPID()
@@ -60,6 +61,12 @@ muon_score = []
 electron_label = []
 gamma_label = []
 muon_label = []
+
+run = []
+subrun = []
+event = []
+energy = []
+momentum = []
 
 print("Total number of events: ", test_size)
 
@@ -83,8 +90,18 @@ for ENTRY in range(n_events - 1):
     gamma_score.append(score[1])
     muon_score.append(score[2])
 
-                                            
-pre_df_dict = {'e_score':electron_score,'gamma_score':gamma_score,'mu_score':muon_score,
-                'e_label':electron_label, 'gamma_label':gamma_label, 'mu_label':muon_label}
+    run.append(test_data[ENTRY][2])
+    subrun.append(test_data[ENTRY][3])
+    event.append(test_data[ENTRY][4])
+
+    # Search the full input data by run & event 
+    energy_value = input_csv.loc[(input_csv['run'] == run[-1]) & (input_csv['event'] == event[-1]), 'Energy'].values[0]
+    energy.append(energy_value)
+    momentum_value = input_csv.loc[(input_csv['run'] == run[-1]) & (input_csv['event'] == event[-1]), 'Momentum'].values[0]
+    momentum.append(momentum_value)
+                                  
+pre_df_dict = {'run': run, 'e_score':electron_score,'gamma_score':gamma_score,'mu_score':muon_score,
+               'subrun': subrun, 'e_label':electron_label, 'gamma_label':gamma_label, 'mu_label':muon_label,
+               'event': event, 'Energy': energy, 'Momentum': momentum}
 df = pd.DataFrame.from_dict(pre_df_dict)
 df.to_csv(output_file,index=False)
