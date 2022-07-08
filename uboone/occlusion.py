@@ -27,38 +27,34 @@ cfg  = config_loader(CFG)
 os.environ["CUDA_DEVICE_ORDER"]="PCI_BUS_ID"
 os.environ["CUDA_VISIBLE_DEVICES"]=cfg.GPUID
 
-input_csv = pd.read_csv("/hepgpu4-data1/yuliia/training_output/all_test_scores.csv")
+input_csv = pd.read_csv("/hepgpu4-data1/yuliia/training_output/test_additional_5099_steps.csv")
 
-weight_file="/hepgpu4-data1/yuliia/MPID_pytorch/weights/mpid_model_20220628-04_43_PM_epoch_4_batch_id_1241_title_0.001_AG_GN_final_step_6625.pwf"
+entry_of_interest = 1500
+
+weight_file="/hepgpu4-data1/yuliia/MPID_pytorch/weights/mpid_model_20220706-06_45_PM_epoch_3_batch_id_1061_title_0.001_AG_GN_final_step_5099.pwf"
 
 mpid = mpid_net.MPID()
 mpid.cuda() 
 mpid.load_state_dict(torch.load(weight_file, map_location=train_device))
 mpid.eval()
 
-test_file = "/hepgpu4-data1/yuliia/MPID/larcv2/test_set_collection_plane.root"
-test_data = mpid_data.MPID_Dataset(test_file, "image2d_image2d_tree",  "particle_mctruth_tree", train_device, nclasses=cfg.num_class, plane=0, augment=cfg.augment)
+test_file = "/hepgpu4-data1/yuliia/MPID/larcv2/test_set_collection_plane_2.root"
+test_data = mpid_data.MPID_Dataset(test_file, "image2d_image2d_tree", train_device, nclasses=cfg.num_class, plane=0, augment=cfg.augment)
 
 test_size = len(test_data)
+print(len(input_csv))
 
 print("\ntest_size = ", test_size)
 
 test_loader = DataLoader(dataset=test_data, batch_size=cfg.batch_size_test, shuffle=True)
 
-#input_csv = pd.read_csv("/hepgpu4-data1/yuliia/spg_electron.csv")
-
-def add_mask(input_tensor):
-    input_tensor[input_tensor>0] = 0 
-    return input_tensor
-
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ Scanning Occlusion ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 occlusion_step = 4
 
-# do_occlusion = False
 do_occlusion = True
-entry_start=1900
-entries=1
+entry_start = entry_of_interest
+entries = 1
 if not do_occlusion:
     entries = 10
 
@@ -66,6 +62,8 @@ run = []
 subrun = []
 event = []
 energy = []
+
+print(input_csv.loc[(input_csv['run'] == 73) & (input_csv['subrun'] == 22) & (input_csv['event'] == 8)])
 
 for ENTRY in xrange(entry_start, entry_start + entries):
     print("ENTRY: ", ENTRY)
@@ -80,6 +78,7 @@ for ENTRY in xrange(entry_start, entry_start + entries):
 
     score = nn.Sigmoid()(mpid(input_image.cuda()))
     print(score)
+    print(subrun[-1])
     fig, ax= plt.subplots(1,1,figsize=(7,6))
     ax.imshow(input_image.cpu()[0][0], cmap='jet')
     ax.set_xlim(100,500)
@@ -127,8 +126,6 @@ for ENTRY in xrange(entry_start, entry_start + entries):
 #             ax.text(0,20, score[0],color="white",fontsize=15)
 #             ax.text(0,40, score[1],color="white",fontsize=15)
 #             ax.text(0,60, score[2],color="white",fontsize=15)
-#             ax.text(0,80, score[3],color="white",fontsize=15)
-#             ax.text(0,100, score[4],color="white",fontsize=15)
 
 #             ax.text(0,0,"Y Plane", fontsize=20, color="white")
 #             ax.text(0, 50, "MicroBooNE Simulation", fontsize=20, color="white")
@@ -146,8 +143,6 @@ for ENTRY in xrange(entry_start, entry_start + entries):
 #     ax.text(0,20, score[0],color="white",fontsize=15)
 #     ax.text(0,40, score[1],color="white",fontsize=15)
 #     ax.text(0,60, score[2],color="white",fontsize=15)
-#     ax.text(0,80, score[3],color="white",fontsize=15)
-#     ax.text(0,100, score[4],color="white",fontsize=15)
 
 def score_plot(score_map, title, xmin, xmax, ymin, ymax, vmin, vmax, cmap="jet"):
 
@@ -175,37 +170,15 @@ def score_plot(score_map, title, xmin, xmax, ymin, ymax, vmin, vmax, cmap="jet")
 cmap="Oranges"
 cmap="jet"
 
-"""if (np.max(score_map_elec)>0.9):
-    score_plot(score_map_elec, "Electron", 0,0,0,0, 0.9,np.max(score_map_elec), cmap)
-elif (np.max(score_map_elec)<0.1):
-    score_plot(score_map_elec, "Electron", 0,0,0,0, np.min(score_map_elec),0.1, cmap)
-else:
-    score_plot(score_map_elec, "Electron", 0,0,0,0, np.min(score_map_elec),np.max(score_map_elec), cmap)
-
-if (np.max(score_map_gamm)>0.9):
-    score_plot(score_map_gamm, "Photon", 0,0,0,0, 0.9,np.max(score_map_gamm), cmap)
-elif (np.max(score_map_gamm)<0.1):
-    score_plot(score_map_gamm, "Photon", 0,0,0,0, np.min(score_map_elec),0.1, cmap)
-else:
-    score_plot(score_map_gamm, "Photon", 0,0,0,0, np.min(score_map_gamm),np.max(score_map_gamm), cmap)
-
-if (np.max(score_map_muon)>0.9):
-    score_plot(score_map_muon, "Muon", 0,0,0,0, 0.9,np.max(score_map_muon), cmap)
-elif (np.max(score_map_muon)<0.1):
-    score_plot(score_map_muon, "Muon", 0,0,0,0, np.min(score_map_muon),0.1, cmap)
-else:
-    score_plot(score_map_muon, "Muon", 0,0,0,0, np.min(score_map_muon),np.max(score_map_muon), cmap)"""
-
-score_plot(score_map_elec, "Electron", 0,0,0,0, np.min(score_map_elec),np.max(score_map_elec), cmap)
-score_plot(score_map_gamm, "Photon", 0,0,0,0, np.min(score_map_gamm),np.max(score_map_gamm), cmap)
-score_plot(score_map_muon, "Muon", 0,0,0,0, np.min(score_map_muon),np.max(score_map_muon), cmap)
+score_plot(score_map_elec, "electron", 0,0,0,0, np.min(score_map_elec),np.max(score_map_elec), cmap)
+score_plot(score_map_gamm, "photon", 0,0,0,0, np.min(score_map_gamm),np.max(score_map_gamm), cmap)
+score_plot(score_map_muon, "muon", 0,0,0,0, np.min(score_map_muon),np.max(score_map_muon), cmap)
 
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ Box Occlusion ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-#do_occlusion = False
 do_occlusion = True
-entry_start=1900
-entries=1
+entry_start = entry_of_interest
+entries = 1
 if not do_occlusion:
     entries = 10
 
@@ -222,11 +195,11 @@ for ENTRY in xrange(entry_start, entry_start + entries):
     ax.text(xbase+0,ybase+20, "elec, %.3f"%score.cpu().detach().numpy()[0][0],color="white",fontsize=15)
     ax.text(xbase+0,ybase+40, "gamm, %.3f"%score.cpu().detach().numpy()[0][1],color="white",fontsize=15)
     ax.text(xbase+0,ybase+60, "muon, %.3f"%score.cpu().detach().numpy()[0][2],color="white",fontsize=15)
-
     ax.text(xbase+0,ybase+120, "Entry, %i"%ENTRY,color="white",fontsize=15)
-    run.append(test_data[ENTRY][2])
-    subrun.append(test_data[ENTRY][3])
-    event.append(test_data[ENTRY][4])
+
+    run.append(int(test_data[ENTRY][2])) # int() to avoid long type
+    subrun.append(int(test_data[ENTRY][3]))
+    event.append(int(test_data[ENTRY][4]))
 
     # Search the full input data by run, subrun & event to find the corresponding energy
     eng = input_csv.loc[(input_csv['run'] == run[-1]) & (input_csv['subrun'] == subrun[-1]) & (input_csv['event'] == event[-1]), 'Energy'].values[0]
@@ -234,7 +207,7 @@ for ENTRY in xrange(entry_start, entry_start + entries):
 
     plt.savefig("/hepgpu4-data1/yuliia/training_output/box_occlusion.png", bbox_inches="tight", pad_inches=0.01)
 
-entry_start=0
+"""entry_start=0
 entries=1000
 scores = np.zeros([5,1000])
 
@@ -257,4 +230,4 @@ ax.hist(scores[1], bins=bins, label="gamm", stacked=1)
 ax.hist(scores[2], bins=bins, label="muon", stacked=1)
 
 ax.legend()
-plt.savefig("/hepgpu4-data1/yuliia/training_output/scores_hist_occlusion.png", bbox_inches="tight", pad_inches=0.01)
+plt.savefig("/hepgpu4-data1/yuliia/training_output/scores_hist_occlusion.png", bbox_inches="tight", pad_inches=0.01)"""
