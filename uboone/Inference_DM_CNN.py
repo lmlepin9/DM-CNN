@@ -30,16 +30,18 @@ cfg  = config_loader(CFG)
 os.environ["CUDA_DEVICE_ORDER"]="PCI_BUS_ID"
 os.environ["CUDA_VISIBLE_DEVICES"]=cfg.GPUID
 
-
 #input_channel = "dt_overlay_"+mass
 #input_file = "dt_overlay_"+mass+"_larcv_cropped.root"
+
 output_dir = "/hepgpu4-data1/yuliia/training_output/"
-output_file = output_dir + "MPID_scores_muon_test_additional_6625_steps.csv"
+output_file = output_dir + "MPID_scores_eminus_test_additional_4089_steps.csv"
 
-input_csv = pd.read_csv("/hepgpu4-data1/yuliia/spg_muon.csv")
+input_csv = pd.read_csv("/hepgpu4-data1/yuliia/spg_electron.csv") # event info, vertices, energy
+input_file = "/hepgpu4-data1/yuliia/singularity/images/eminus_test_larcv_collection_plane_cropped.root"  # cropped images
 
-input_file = "/hepgpu4-data1/yuliia/singularity/images/muminus_test_larcv_collection_plane_cropped.root"
-weight_file="/hepgpu4-data1/yuliia/MPID_pytorch/weights/mpid_model_20220628-04_43_PM_epoch_4_batch_id_1241_title_0.001_AG_GN_final_step_6625.pwf"
+weight_file="/hepgpu4-data1/yuliia/MPID_pytorch/weights/mpid_model_20220707-07_53_PM_epoch_3_batch_id_51_title_0.001_AG_GN_final_step_4089.pwf.pwf"
+
+# Set up GPU
 train_device = 'cuda' if torch.cuda.is_available() else 'cpu'
 
 mpid = mpid_net.MPID()
@@ -47,12 +49,12 @@ mpid.cuda()
 mpid.load_state_dict(torch.load(weight_file, map_location=train_device))
 mpid.eval()
 
-input_data = mpid_data.MPID_Dataset(input_file, "image2d_image2d_tree", "particle_mctruth_tree", train_device, nclasses=3, plane=0, augment=cfg.augment)
+input_data = mpid_data.MPID_Dataset(input_file, "image2d_image2d_tree", train_device, nclasses=3, plane=0, augment=cfg.augment)
 
-# Training and test data are separate
-#train_size = int(0.9 * len(input_data))
+# If training and test data are separate
+"""train_size = int(0.9 * len(input_data))
 #test_size = int(0.1 * len(input_data))  
-#train_data, test_data = torch.utils.data.random_split(input_data,[train_size, test_size])
+#train_data, test_data = torch.utils.data.random_split(input_data,[train_size, test_size])"""
 
 electron_score = []
 gamma_score = []
