@@ -51,7 +51,7 @@ mpid.eval()
 
 input_data = mpid_data.MPID_Dataset(input_file, "image2d_image2d_tree", train_device, nclasses=3, plane=0, augment=cfg.augment)
 
-# If training and test data are separate
+# If training and test data are not separate
 """train_size = int(0.9 * len(input_data))
 #test_size = int(0.1 * len(input_data))  
 #train_data, test_data = torch.utils.data.random_split(input_data,[train_size, test_size])"""
