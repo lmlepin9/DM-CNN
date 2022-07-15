@@ -77,11 +77,12 @@ def validation(model, test_loader, batch_size, device, event_nums):
 
         #print (y_truth, y_prediction)
 
-        ones = torch.ones(batch_size, 5).cuda()
-        zeros = torch.zeros(batch_size, 5).cuda()
+        num_class = 3
+        ones = torch.ones(batch_size, num_class).cuda() 
+        zeros = torch.zeros(batch_size, num_class).cuda()
         y_prediction=torch.where(y_prediction >0.5, ones, zeros)
         
         predicted += torch.sum(y_truth.eq(y_prediction).float()).cpu().numpy()
-        total += batch_size * 5
+        total += batch_size * num_class
 
     return float(predicted)/total
