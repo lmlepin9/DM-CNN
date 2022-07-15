@@ -60,14 +60,14 @@ train_device = 'cuda' if torch.cuda.is_available() else 'cpu'
 
 
 # Training data
-train_file = "/hepgpu4-data1/yuliia/MPID/larcv2/mpid_cosmics_mc_training.root"
+train_file = "/hepgpu5-data1/yuliia/MPID/larcv2/mpid_cosmics_mc_training.root"
 #train_file = "/scratch/ruian/training_data/MPID/larcv2/train_normal/larcv_7e19963d-1018-42b5-940c-48489454fa1e.root"
 train_data = mpid_data_binary.MPID_Dataset(train_file, "image2d_image2d_binary_tree", train_device, plane=0, augment=cfg.augment)
 train_loader = DataLoader(dataset=train_data, batch_size=cfg.batch_size_train, shuffle=True)
 labels = 2
 
 # Test data
-test_file = "/hepgpu4-data1/yuliia/MPID/larcv2/mpid_cosmics_mc_test.root"
+test_file = "/hepgpu5-data1/yuliia/MPID/larcv2/mpid_cosmics_mc_test.root"
 test_data = mpid_data_binary.MPID_Dataset(test_file, "image2d_image2d_binary_tree", train_device, plane=0)
 test_loader = DataLoader(dataset=test_data, batch_size=cfg.batch_size_test, shuffle=True)
 
@@ -93,7 +93,7 @@ test_accuracies =[]
 
 EPOCHS = cfg.EPOCHS
 
-fout = open('/hepgpu4-data1/yuliia/training_csvs/production_{}_{}.csv'.format(timestr(), title), 'w')
+fout = open('/hepgpu5-data1/yuliia/training_csvs/production_{}_{}.csv'.format(timestr(), title), 'w')
 fout.write('train_accu,test_accu,train_loss,test_loss,epoch,step')
 fout.write('\n')
 
@@ -129,7 +129,7 @@ for epoch in range(EPOCHS):
 
         if (batch_idx % cfg.test_every_step == 1 and cfg.run_test):
             if (cfg.save_weights and epoch >= 3 and epoch <= 6):
-                torch.save(mpid.state_dict(), "/hepgpu4-data1/yuliia/MPID_pytorch/weights/mpid_model_{}_epoch_{}_batch_id_{}_labels_{}_title_{}_step_{}.pwf".format(timestr(), epoch, batch_idx,labels, title, step))
+                torch.save(mpid.state_dict(), "/hepgpu5-data1/yuliia/MPID_pytorch/weights/mpid_model_{}_epoch_{}_batch_id_{}_labels_{}_title_{}_step_{}.pwf".format(timestr(), epoch, batch_idx,labels, title, step))
 
             print ("Start eval on test sample.......@step..{}..@epoch..{}..@batch..{}".format(step,epoch, batch_idx))
             test_accuracy = mpid_func_binary.validation(mpid, test_loader, cfg.batch_size_test, train_device, event_nums=cfg.test_events_nums)
