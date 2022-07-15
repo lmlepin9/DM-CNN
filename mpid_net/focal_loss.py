@@ -6,12 +6,9 @@ import torch.nn.functional as F
 # https://programtalk.com/vs4/python/socom20/facebook-image-similarity-challenge-2021/ensemble_training_scripts/smp_test19/Facebook_model_v20.py/
 # https://catalyst-team.github.io/catalyst/v20.10/_modules/catalyst/metrics/focal.html
 
-def sigmoid_focal_loss(inputs, targets, alpha=0.25, gamma=2, reduction="mean"):
-""" 
-    Function used in torchvision.ops.sigmoid_focal_loss
-"""
+def sigmoid_focal_loss(inputs, targets, alpha=-1, gamma=0, reduction="mean"):
     p = torch.sigmoid(inputs)
-    ce_loss = F.binary_cross_entropy_with_logits(inputs, targets, reduction="none")
+    ce_loss = F.binary_cross_entropy_with_logits(inputs, targets, reduction="mean")
     p_t = p * targets + (1 - p) * (1 - targets)
     loss = ce_loss * ((1 - p_t) ** gamma)
 
@@ -27,9 +24,9 @@ def sigmoid_focal_loss(inputs, targets, alpha=0.25, gamma=2, reduction="mean"):
     return loss
 
 class FocalLoss(nn.Module):
-    def __init__(self, alpha=0.25, gamma=2):
+    def __init__(self, alpha=-1, gamma=0):
         super(FocalLoss, self).__init__()
-        self.alpha = alpha
+        self.alpha = -1
         self.gamma = gamma
         return None
 
