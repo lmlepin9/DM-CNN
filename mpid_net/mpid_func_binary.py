@@ -68,7 +68,7 @@ def validation(model, test_loader, batch_size, device, event_nums):
     model.eval()
     predicted = 0.0
     total = 0.0
-    num_clases = 2
+    num_classes = 2
     for batch_idx, (x_batch, y_batch) in enumerate(test_loader):
         if batch_idx * batch_size > event_nums:
             break
@@ -78,11 +78,11 @@ def validation(model, test_loader, batch_size, device, event_nums):
 
         #print (y_truth, y_prediction)
 
-        ones = torch.ones(batch_size, num_clases).cuda()
-        zeros = torch.zeros(batch_size, num_clases).cuda()
+        ones = torch.ones(batch_size, num_classes).cuda()
+        zeros = torch.zeros(batch_size, num_classes).cuda()
         y_prediction=torch.where(y_prediction >0.5, ones, zeros)
         
         predicted += torch.sum(y_truth.eq(y_prediction).float()).cpu().numpy()
-        total += batch_size * num_clases
+        total += batch_size * num_classes
 
     return float(predicted)/total

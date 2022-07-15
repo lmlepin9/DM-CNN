@@ -17,7 +17,7 @@ from lib.utility import timestr
 
 BASE_PATH = os.path.realpath(__file__)
 BASE_PATH = os.path.dirname(BASE_PATH)
-CFG = os.path.join(BASE_PATH,"../cfg","simple_config_binary.cfg")
+CFG = os.path.join(BASE_PATH,"../cfg","simple_config.cfg")
 cfg  = config_loader(CFG)
 
 os.environ["CUDA_DEVICE_ORDER"]="PCI_BUS_ID"
@@ -60,18 +60,18 @@ train_device = 'cuda' if torch.cuda.is_available() else 'cpu'
 
 
 # Training data
-train_file = "/hepgpu5-data2/lmora_sets/training_set_binary.root"
+train_file = "/hepgpu4-data1/yuliia/MPID/larcv2/mpid_cosmics_mc_training.root"
 #train_file = "/scratch/ruian/training_data/MPID/larcv2/train_normal/larcv_7e19963d-1018-42b5-940c-48489454fa1e.root"
-train_data = mpid_data_binary.MPID_Dataset(train_file, "image2d_image2d_binary_tree", train_device, plane=cfg.plane, augment=cfg.augment)
+train_data = mpid_data_binary.MPID_Dataset(train_file, "image2d_image2d_binary_tree", train_device, plane=0, augment=cfg.augment)
 train_loader = DataLoader(dataset=train_data, batch_size=cfg.batch_size_train, shuffle=True)
 labels = 2
 
 # Test data
-test_file = "/hepgpu5-data2/lmora_sets/test_set_binary.root"
-test_data = mpid_data_binary.MPID_Dataset(test_file, "image2d_image2d_binary_tree", train_device, plane=cfg.plane)
+test_file = "/hepgpu4-data1/yuliia/MPID/larcv2/mpid_cosmics_mc_test.root"
+test_data = mpid_data_binary.MPID_Dataset(test_file, "image2d_image2d_binary_tree", train_device, plane=0)
 test_loader = DataLoader(dataset=test_data, batch_size=cfg.batch_size_test, shuffle=True)
 
-mpid = mpid_net_binary.MPID(dropout=cfg.drop_out)
+mpid = mpid_net_binary.MPID(dropout=cfg.drop_out, num_classes=2)
 mpid.cuda()
 
 # Using BCEWithLogitsLoss instead of 
@@ -93,7 +93,7 @@ test_accuracies =[]
 
 EPOCHS = cfg.EPOCHS
 
-fout = open('./binary_labels.csv'.format(timestr(), title), 'w')
+fout = open('/hepgpu4-data1/yuliia/training_csvs/production_{}_{}.csv'.format(timestr(), title), 'w')
 fout.write('train_accu,test_accu,train_loss,test_loss,epoch,step')
 fout.write('\n')
 
@@ -119,7 +119,7 @@ for epoch in range(EPOCHS):
             
         print('\r Train Epoch: {}/{} [{}/{} ({:.0f}%)]\tLoss: {:.6f}'.format(
             epoch,
-            EPOCHS,
+            EPOCHS-1,
             batch_idx * len(x_batch), 
             len(train_loader.dataset),
             100. * batch_idx / len(train_loader), 
@@ -129,14 +129,14 @@ for epoch in range(EPOCHS):
 
         if (batch_idx % cfg.test_every_step == 1 and cfg.run_test):
             if (cfg.save_weights and epoch >= 3 and epoch <= 6):
-                torch.save(mpid.state_dict(), "/hepgpu5-data2/lmora_weights/binary_weights/mpid_model_{}_epoch_{}_batch_id_{}_labels_{}_title_{}_step_{}.pwf".format(timestr(), epoch, batch_idx,labels, title, step))
+                torch.save(mpid.state_dict(), "/hepgpu4-data1/yuliia/MPID_pytorch/weights/mpid_model_{}_epoch_{}_batch_id_{}_labels_{}_title_{}_step_{}.pwf".format(timestr(), epoch, batch_idx,labels, title, step))
 
             print ("Start eval on test sample.......@step..{}..@epoch..{}..@batch..{}".format(step,epoch, batch_idx))
             test_accuracy = mpid_func_binary.validation(mpid, test_loader, cfg.batch_size_test, train_device, event_nums=cfg.test_events_nums)
-            print ("Test Accuray {}".format(test_accuracy))
+            print ("Test Accuracy {}".format(test_accuracy))
             print ("Start eval on training sample...@epoch..{}.@batch..{}".format(epoch, batch_idx))
             train_accuracy = mpid_func_binary.validation(mpid, train_loader, cfg.batch_size_train, train_device, event_nums=cfg.test_events_nums)
-            print ("Train Accuray {}".format(train_accuracy))
+            print ("Train Accuracy {}".format(train_accuracy))
             test_loss= test_step(test_loader, train_device)
             print ("Test Loss {}".format(test_loss))
             fout.write("%f,"%train_accuracy)        

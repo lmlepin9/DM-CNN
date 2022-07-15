@@ -74,7 +74,8 @@ class MPID_Dataset(Dataset):
             self.event_label[1] = 1
                 
                               
-        return (self.this_image, self.event_label, self.event_info)
+        #return (self.this_image, self.event_label, self.event_info)
+        return (self.this_image, self.event_label)
 
     def __len__(self):
         return self.particle_image_chain.GetEntries()
