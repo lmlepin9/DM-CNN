@@ -8,7 +8,7 @@ import torch.nn as nn
 
 class MPID(nn.Module):
     # eps: default value for batchnorm
-    def __init__(self, dropout=0.5, num_classes=cfg.num_class, eps = 1e-05, running_stats=False):
+    def __init__(self, dropout=0.5, num_classes=2, eps = 1e-05, running_stats=False):
         super(MPID, self).__init__()
 
         self.features = nn.Sequential(
