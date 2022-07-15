@@ -62,7 +62,7 @@ train_device = 'cuda' if torch.cuda.is_available() else 'cpu'
 # Training data
 train_file = "/hepgpu5-data1/yuliia/MPID/larcv2/mpid_cosmics_mc_training.root"
 #train_file = "/scratch/ruian/training_data/MPID/larcv2/train_normal/larcv_7e19963d-1018-42b5-940c-48489454fa1e.root"
-train_data = mpid_data_binary.MPID_Dataset(train_file, "image2d_image2d_binary_tree", train_device, plane=0, augment=cfg.augment)
+train_data = mpid_data_binary.MPID_Dataset(train_file, "image2d_image2d_binary_tree", train_device, plane=0, augment=False)
 train_loader = DataLoader(dataset=train_data, batch_size=cfg.batch_size_train, shuffle=True)
 labels = 2
 
