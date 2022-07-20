@@ -5,9 +5,11 @@ class config_loader(object):
             data = f.read()
         data = data.split("\n")
         for line in data:
-	    if line == "": continue
-            if line.startswith("#"): continue
+            if (line == ""):
+                continue
+            if line.startswith("#"):
+                continue
             SS = "self." + line
-            print SS
+            print(SS)
             exec(SS)
-        
+    
