@@ -43,10 +43,10 @@ class MPID_Dataset(Dataset):
 
         self.event_id_list, self.this_image = EvDisp(self.input_file)
 
-        for element in self.event_id_list:
-            self.event_info[0] = element[ENTRY][3] # run
-            self.event_info[1] = element[ENTRY][2] # subrun
-            self.event_info[2] = element[ENTRY][1] # event
+        self.this_image = self.this_image[ENTRY]
+        self.event_info[0] = int(self.event_id_list[ENTRY][3]) # run
+        self.event_info[1] = int(self.event_id_list[ENTRY][2]) # subrun
+        self.event_info[2] = int(self.event_id_list[ENTRY][1]) # event
 
         # Image Thresholding
         #self.this_image=image_modify(self.this_image)
@@ -65,13 +65,12 @@ class MPID_Dataset(Dataset):
         # Signal events are labeled with run = 100 
         if(self.event_info[0] == 100):
             self.event_label[0] = 1
-        
         else:
             self.event_label[1] = 1
                 
                               
-        return (self.this_image, self.event_label, self.event_info)
-        #return (self.this_image, self.event_label)
+        #return (self.this_image, self.event_label, self.event_info)
+        return (self.this_image, self.event_label)
 
     def __len__(self):
         f = h5py.File(self.input_file,'r')
