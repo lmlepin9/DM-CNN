@@ -27,8 +27,6 @@ class MPID_Dataset(Dataset):
         self.verbose=verbose
          
         self.input_file = input_file
-        #f = h5py.File(input_file,'r')
-        #self.particle_image_chain = f['image2d']['image2d_binary_tree']
 
         if (device):
             self.device=device
@@ -46,9 +44,9 @@ class MPID_Dataset(Dataset):
         self.event_id_list, self.this_image = EvDisp(self.input_file)
 
         for element in self.event_id_list:
-            self.event_info[0] = element[1] # run
-            self.event_info[1] = element[2] # subrun
-            self.event_info[2] = element[3] # event
+            self.event_info[0] = element[ENTRY][3] # run
+            self.event_info[1] = element[ENTRY][2] # subrun
+            self.event_info[2] = element[ENTRY][1] # event
 
         # Image Thresholding
         #self.this_image=image_modify(self.this_image)
@@ -75,8 +73,6 @@ class MPID_Dataset(Dataset):
         return (self.this_image, self.event_label, self.event_info)
         #return (self.this_image, self.event_label)
 
-    #def __len__(self):
-        #return self.particle_image_chain.GetEntries()
-
-train_file = "/Users/juliamaidannyk/Downloads/dark_trident_train_overlay_larcv_cropped.h5"
-train_data = MPID_Dataset(train_file, "image2d_image2d_binary_tree", device='cpu', plane=0, augment=False)
+    def __len__(self):
+        f = h5py.File(self.input_file,'r')
+        return len(f['eventid'])
