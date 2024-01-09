@@ -9,6 +9,13 @@ import torch
 from torch.utils.data import Dataset
 
 def image_modify(img):
+
+    '''
+        This function thresholds the input image
+        Sets up to 0 pixels with intensity below 10 
+        and to 500 pixels with intensity beyond 500. 
+    '''
+
     img_mod = np.where(img<10,    0,img)
     img_mod = np.where(img>500, 500,img_mod)
     return img_mod
@@ -35,12 +42,7 @@ class MPID_Dataset(Dataset):
         #print ("open ENTRY @ {}".format(ENTRY))
 
         self.particle_image_chain.GetEntry(ENTRY)
-        self.this_image_cpp_object = self.particle_image_chain.image2d_image2d_binary_branch
-        
-        self.event_info = torch.zeros([3])
-        self.event_info[0] = self.this_image_cpp_object.run()
-        self.event_info[1] = self.this_image_cpp_object.subrun()
-        self.event_info[2] = self.this_image_cpp_object.event()
+        self.this_image_cpp_object = self.particle_image_chain.image2d_image2d_binary_branch 
         self.this_image=larcv.as_ndarray(self.this_image_cpp_object.as_vector()[self.plane])
         # Image Thresholding
         self.this_image=image_modify(self.this_image)
@@ -72,10 +74,13 @@ class MPID_Dataset(Dataset):
         
         else:
             self.event_label[1] = 1
+
+        # Return info 
+        self.event_info = [ self.this_image_cpp_object.run() , self.this_image_cpp_object.subrun() , self.this_image_cpp_object.event()]
+        self.nevents = self.particle_image_chain.GetEntries()
                 
-                              
-        return (self.this_image, self.event_label, self.event_info)
         #return (self.this_image, self.event_label)
+        return (self.this_image,self.event_label,self.event_info,self.nevents)
 
     def __len__(self):
         return self.particle_image_chain.GetEntries()

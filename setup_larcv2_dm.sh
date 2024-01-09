@@ -5,13 +5,16 @@ alias l="ls -lrth"
 
 export LC_ALL=C
 
+# Set up ROOT
+echo "Setting up ROOT..."
 source /usr/local/bin/thisroot.sh
 
+# Set up larcv2 
+echo "Setting up larcv2..."
+source /usr/local/share/larcv2/configure.sh
+
 # This directory points to where the DM-CNN repo is 
-source /hepgpu6-data1/lmlepin/workspace/DM-CNN/setup.sh
-cd /usr/local/share/
-source larcv2/configure.sh
-cd /hepgpu6-data1/lmlepin/workspace/DM-CNN
+echo "Setting up DM-CNN..."
 source setup.sh
 
 alias ipn='ipython notebook --no-browser'
