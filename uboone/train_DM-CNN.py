@@ -2,7 +2,7 @@ from __future__ import division
 from __future__ import print_function
 
 
-# TO DO: ADD TIMING FOR TRAINING, IMPLEMENT MULTIPLE GPUs 
+# TO DO: IMPLEMENT MULTIPLE GPUs 
 
 import torch
 # We set this here, otherwise pytorch can't recognize CUDA
@@ -19,7 +19,6 @@ from torch.autograd import Variable
 from torch.utils.data import DataLoader, TensorDataset
 from torch.utils.data.dataset import random_split
 from torchvision import transforms
-from torchvision.datasets import MNIST
 
 
 import os, sys
