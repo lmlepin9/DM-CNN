@@ -26,6 +26,7 @@ import os, sys
 from lib.config import config_loader
 from lib.utility import timestr
 import numpy as np
+import time 
 
 # MPID stuff 
 from mpid_data import mpid_data_binary
@@ -112,6 +113,8 @@ print ("Start DM-CNN training...")
 
 step=0
 
+#initialize timer
+init = time.perf_counter()
 for epoch in range(EPOCHS):
     print ("\n")
     print (" @{}th epoch...".format(epoch))
@@ -155,3 +158,6 @@ for epoch in range(EPOCHS):
             fout.write("\n")
         step+=1
 fout.close()
+# end timer
+end = time.perf_counter()
+print(f"Total training time: {end - init:0.4f} seconds")
