@@ -41,7 +41,7 @@ def make_test_step(model, test_loader, loss_fn, optimizer):
         print ("Model training status in test_step, ", model.training)
         tot_loss = 0
         ctr = 0
-        for batch_idx, (x_batch, y_batch) in enumerate(test_loader):
+        for batch_idx, (x_batch, y_batch, info_batch, nevents_batch) in enumerate(test_loader):
             # Makes predictions
             x_batch = x_batch.to(train_device).view((-1,1,512,512))
             y_batch = y_batch.to(train_device)
@@ -69,7 +69,7 @@ def validation(model, test_loader, batch_size, device, event_nums):
     predicted = 0.0
     total = 0.0
     num_clases = 2
-    for batch_idx, (x_batch, y_batch) in enumerate(test_loader):
+    for batch_idx, (x_batch, y_batch, info_batch, nevents_batch) in enumerate(test_loader):
         if batch_idx * batch_size > event_nums:
             break
         x_batch = x_batch.to(device).view((-1,1,512,512))
