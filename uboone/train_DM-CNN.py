@@ -159,4 +159,5 @@ for epoch in range(EPOCHS):
 fout.close()
 # end timer
 end = time.time()
+print("\n")
 print("Total training time: {:0.4f} seconds".format(end-init))
