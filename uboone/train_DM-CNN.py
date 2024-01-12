@@ -113,7 +113,7 @@ print ("Start DM-CNN training...")
 step=0
 
 #initialize timer
-init = time.perf_counter()
+init = time.time()
 for epoch in range(EPOCHS):
     print ("\n")
     print (" @{}th epoch...".format(epoch))
@@ -158,5 +158,5 @@ for epoch in range(EPOCHS):
         step+=1
 fout.close()
 # end timer
-end = time.perf_counter()
-print(f"Total training time: {end - init:0.4f} seconds")
+end = time.time()
+print("Total training time: {:0.4f} seconds".format(end-init))
