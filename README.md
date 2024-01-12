@@ -6,7 +6,7 @@ train a binary classifier. Analogously to MPID, this network receives 512x512 LA
 of the image containing either a dark trident interaction or a background interaction. 
 
 
-![alt text](https://github.com/lmlepin9/DM-CNN/blob/master/lib/run1_NuMI_beamon_larcv_cropped_ENTRY_4204_colorbar_logit.png)
+![alt text](https://github.com/lmlepin9/DM-CNN/blob/master/lib/run1_NuMI_beamon_larcv_cropped_ENTRY_4204_colorbar_logit.png =250x250)
 
 # Dependecies:
 [LArCV2](https://github.com/LArbys/LArCV),
