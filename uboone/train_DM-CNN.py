@@ -21,143 +21,176 @@ from torch.utils.data.dataset import random_split
 from torchvision import transforms
 
 
-import os, sys
+import os, sys, getopt 
 from lib.config import config_loader
 from lib.utility import timestr
 import numpy as np
 import time 
 
-# MPID stuff 
+# import MPID core 
 from mpid_data import mpid_data_binary
 from mpid_net import mpid_net_binary, mpid_func_binary
 
 
-# Get config file 
-BASE_PATH = os.path.realpath(__file__)
-BASE_PATH = os.path.dirname(BASE_PATH)
-CFG = os.path.join(BASE_PATH,"../cfg","simple_config.cfg")
-cfg  = config_loader(CFG)
 
-os.environ["CUDA_DEVICE_ORDER"]="PCI_BUS_ID"
-os.environ["CUDA_VISIBLE_DEVICES"]=cfg.GPUID
+def TrainCNN(train_file, test_file, output_dir, weights_dir):
+    '''
+    Function that trains the DM-CNN model
+    It stores the values of the trainig metrics
+    in a csv file that will be created in output_dir.
+    The weights of the CNN will be stored in weights_dir
 
-# Title
-title = "augmentation_on"
+    '''
+    print("Inputs given: ")
+    print("Training file: ", train_file)
+    print("Test file: ", test_file)
+    print("Output directory: ", output_dir)
+    print("Weights directory: ", weights_dir)
+    print("\n")
 
+    # Get config file 
+    print("Reading config file...\n")
+    BASE_PATH = os.path.realpath(__file__)
+    BASE_PATH = os.path.dirname(BASE_PATH)
+    CFG = os.path.join(BASE_PATH,"../cfg","simple_config.cfg")
+    cfg  = config_loader(CFG)
 
-# Declare input files
-train_file = "/hepgpu6-data1/lmlepin/datasets/cosmics_mpid_training_set/DM-CNN_training_set.root"
-test_file = "/hepgpu6-data1/lmlepin/datasets/cosmics_mpid_training_set/DM-CNN_test_set.root"
+    os.environ["CUDA_DEVICE_ORDER"]="PCI_BUS_ID"
+    os.environ["CUDA_VISIBLE_DEVICES"]=cfg.GPUID
 
-# File to store training metrics 
-fout = open('/hepgpu6-data1/lmlepin/outputs/DM-CNN_training_metrics_{}_{}.csv'.format(timestr(), title), 'w')
-fout.write('train_accu,test_accu,train_loss,test_loss,epoch,step')
-fout.write('\n')
-
-# String used to create files that will contain the CNN weights
-CNN_weights = "/hepgpu6-data1/lmlepin/CNN_weights/DM-CNN_weights/DM-CNN_model_{}_epoch_{}_batch_id_{}_labels_{}_title_{}_step_{}.pwf"
-
-
-
-
-title = cfg.name
-#if (len(sys.argv) > 1) : title = sys.argv[1]
-
-SEED = 1
-cuda = torch.cuda.is_available()
-
-# # For reproducibility
-# torch.manual_seed(SEED)
-
-# if cuda:
-#     torch.cuda.manual_seed(SEED)
+    # Title
+    title = cfg.name
 
 
+    # Create file to store training metrics 
+    fout = open(output_dir + 'DM-CNN_training_metrics_{}_{}.csv'.format(timestr(), title), 'w')
+    fout.write('train_accu,test_accu,train_loss,test_loss,epoch,step')
+    fout.write('\n')
+
+    # String used to create files that will contain the CNN weights
+    CNN_weights = weights_dir + "DM-CNN_model_{}_epoch_{}_batch_id_{}_labels_{}_title_{}_step_{}.pwf"
 
 
-print ("There are {} GPUs available".format(torch.cuda.device_count()))
-train_device = 'cuda' if torch.cuda.is_available() else 'cpu'
+    #if (len(sys.argv) > 1) : title = sys.argv[1]
 
-# Training data
-train_data = mpid_data_binary.MPID_Dataset(train_file, "image2d_image2d_binary_tree", train_device, plane=0, augment=False)
-train_loader = DataLoader(dataset=train_data, batch_size=cfg.batch_size_train, shuffle=True)
-labels = 2
+    SEED = 1
+    cuda = torch.cuda.is_available()
 
-# Test data
-test_data = mpid_data_binary.MPID_Dataset(test_file, "image2d_image2d_binary_tree", train_device, plane=0)
-test_loader = DataLoader(dataset=test_data, batch_size=cfg.batch_size_test, shuffle=True)
+    # # For reproducibility
+    # torch.manual_seed(SEED)
 
-# Import the CNN model 
-mpid = mpid_net_binary.MPID(dropout=cfg.drop_out, num_classes=2)
-mpid.cuda()
+    # if cuda:
+    #     torch.cuda.manual_seed(SEED)
 
-# Using BCEWithLogitsLoss instead of 
-# Using Sigmoid in mpidnet + BCELoss 
-loss_fn = nn.BCEWithLogitsLoss()
+    print ("There are {} GPUs available".format(torch.cuda.device_count()))
+    train_device = 'cuda' if torch.cuda.is_available() else 'cpu'
+
+    # Training data
+    train_data = mpid_data_binary.MPID_Dataset(train_file, "image2d_image2d_binary_tree", train_device, plane=0, augment=False)
+    train_loader = DataLoader(dataset=train_data, batch_size=cfg.batch_size_train, shuffle=True)
+    labels = 2
+
+    # Test data
+    test_data = mpid_data_binary.MPID_Dataset(test_file, "image2d_image2d_binary_tree", train_device, plane=0)
+    test_loader = DataLoader(dataset=test_data, batch_size=cfg.batch_size_test, shuffle=True)
+
+    # Import the CNN model 
+    mpid = mpid_net_binary.MPID(dropout=cfg.drop_out, num_classes=2)
+    mpid.cuda()
+
+    # Using BCEWithLogitsLoss instead of 
+    # Using Sigmoid in mpidnet + BCELoss 
+    loss_fn = nn.BCEWithLogitsLoss()
 
 
-optimizer  = optim.Adam(mpid.parameters(), lr=cfg.learning_rate)#, weight_decay=0.001)
-train_step = mpid_func_binary.make_train_step(mpid, loss_fn, optimizer)
-test_step  = mpid_func_binary.make_test_step(mpid, test_loader, loss_fn, optimizer)
+    optimizer  = optim.Adam(mpid.parameters(), lr=cfg.learning_rate)#, weight_decay=0.001)
+    train_step = mpid_func_binary.make_train_step(mpid, loss_fn, optimizer)
+    test_step  = mpid_func_binary.make_test_step(mpid, test_loader, loss_fn, optimizer)
 
-print ("Training with {} images".format(len(train_loader.dataset)))
+    print ("Training with {} images".format(len(train_loader.dataset)))
 
-train_losses = []
-train_accuracies =[]
-test_losses = []
-test_accuracies =[]
+    train_losses = []
+    train_accuracies =[]
+    test_losses = []
+    test_accuracies =[]
 
-EPOCHS = cfg.EPOCHS
-print ("Start DM-CNN training...")
+    EPOCHS = cfg.EPOCHS
+    print ("Start DM-CNN training...")
 
-step=0
+    step=0
 
-#initialize timer
-init = time.time()
-for epoch in range(EPOCHS):
-    print ("\n")
-    print (" @{}th epoch...".format(epoch))
-    for batch_idx, (x_batch, y_batch, info_batch, nevents_batch) in enumerate(train_loader):
+    #initialize timer
+    init = time.time()
+    for epoch in range(EPOCHS):
         print ("\n")
-        # the dataset "lives" in the CPU, so do our mini-batches
-        # therefore, we need to send those mini-batches to the
-        # device where the model "lives"
-        print (" @{}th epoch, @ batch_id {}".format(epoch, batch_idx))
-        
-        x_batch = x_batch.to(train_device).view((-1,1,512,512))
-        y_batch = y_batch.to(train_device)   
-        loss = train_step(x_batch, y_batch) #model.train() called in train_step
-        train_losses.append(loss)
-        print('\r Train Epoch: {}/{} [{}/{} ({:.0f}%)]\tLoss: {:.6f}'.format(
-            epoch,
-            EPOCHS-1,
-            batch_idx * len(x_batch), 
-            len(train_loader.dataset),
-            100. * batch_idx / len(train_loader), 
-            loss), 
-            end='')
-        if (batch_idx % cfg.test_every_step == 1 and cfg.run_test):
-            if (cfg.save_weights and epoch >= 3 and epoch <= 6):
-                torch.save(mpid.state_dict(), CNN_weights.format(timestr(), epoch, batch_idx,labels, title, step))
+        print (" @{}th epoch...".format(epoch))
+        for batch_idx, (x_batch, y_batch, info_batch, nevents_batch) in enumerate(train_loader):
+            print ("\n")
+            # the dataset "lives" in the CPU, so do our mini-batches
+            # therefore, we need to send those mini-batches to the
+            # device where the model "lives"
+            print (" @{}th epoch, @ batch_id {}".format(epoch, batch_idx))
+            
+            x_batch = x_batch.to(train_device).view((-1,1,512,512))
+            y_batch = y_batch.to(train_device)   
+            loss = train_step(x_batch, y_batch) #model.train() called in train_step
+            train_losses.append(loss)
+            print('\r Train Epoch: {}/{} [{}/{} ({:.0f}%)]\tLoss: {:.6f}'.format(
+                epoch,
+                EPOCHS-1,
+                batch_idx * len(x_batch), 
+                len(train_loader.dataset),
+                100. * batch_idx / len(train_loader), 
+                loss), 
+                end='')
+            if (batch_idx % cfg.test_every_step == 1 and cfg.run_test):
+                if (cfg.save_weights and epoch >= 3 and epoch <= 6):
+                    torch.save(mpid.state_dict(), CNN_weights.format(timestr(), epoch, batch_idx,labels, title, step))
 
-            print ("Start eval on test sample.......@step..{}..@epoch..{}..@batch..{}".format(step,epoch, batch_idx))
-            test_accuracy = mpid_func_binary.validation(mpid, test_loader, cfg.batch_size_test, train_device, event_nums=cfg.test_events_nums)
-            print ("Test Accuracy {}".format(test_accuracy))
-            print ("Start eval on training sample...@epoch..{}.@batch..{}".format(epoch, batch_idx))
-            train_accuracy = mpid_func_binary.validation(mpid, train_loader, cfg.batch_size_train, train_device, event_nums=cfg.test_events_nums)
-            print ("Train Accuracy {}".format(train_accuracy))
-            test_loss= test_step(test_loader, train_device)
-            print ("Test Loss {}".format(test_loss))
-            fout.write("%f,"%train_accuracy)        
-            fout.write("%f,"%test_accuracy)
-            fout.write("%f,"%loss)
-            fout.write("%f,"%test_loss)
-            fout.write("%f,"%epoch)
-            fout.write("%f"%step)
-            fout.write("\n")
-        step+=1
-fout.close()
-# end timer
-end = time.time()
-print("\n")
-print("Total training time: {:0.4f} seconds".format(end-init))
+                print ("Start eval on test sample.......@step..{}..@epoch..{}..@batch..{}".format(step,epoch, batch_idx))
+                test_accuracy = mpid_func_binary.validation(mpid, test_loader, cfg.batch_size_test, train_device, event_nums=cfg.test_events_nums)
+                print ("Test Accuracy {}".format(test_accuracy))
+                print ("Start eval on training sample...@epoch..{}.@batch..{}".format(epoch, batch_idx))
+                train_accuracy = mpid_func_binary.validation(mpid, train_loader, cfg.batch_size_train, train_device, event_nums=cfg.test_events_nums)
+                print ("Train Accuracy {}".format(train_accuracy))
+                test_loss= test_step(test_loader, train_device)
+                print ("Test Loss {}".format(test_loss))
+                fout.write("%f,"%train_accuracy)        
+                fout.write("%f,"%test_accuracy)
+                fout.write("%f,"%loss)
+                fout.write("%f,"%test_loss)
+                fout.write("%f,"%epoch)
+                fout.write("%f"%step)
+                fout.write("\n")
+            step+=1
+        fout.close()
+        # end timer
+        end = time.time()
+        print("\n")
+        print("Total training time: {:0.4f} seconds".format(end-init))
+        return 0 
+
+
+
+if __name__ == '__main__':
+    train_file = None
+    test_file = None
+    output_dir = None
+    weights_dir = None 
+    argv = sys.argv[1:]
+    try:
+        opts, args = getopt.getopt(argv,"a:b:o:w:")
+    except:
+        print("Error...")
+
+    for opt, arg in opts:
+            if opt in ['-a']: 
+                train_file = arg 
+            elif opt in ['-b']:
+                test_file = arg
+            elif opt in ['-o']:
+                output_dir = arg
+            elif opt in ['-w']:
+                weights_dir = arg
+
+    TrainCNN(train_file, test_file, output_dir, weights_dir)

@@ -1,8 +1,8 @@
-# DM-CNN(PyTorch): Dark Matter Classifier based on the MPID CNN 
+# DM-CNN: Dark Matter Classifier based on the MPID CNN 
 
 Convolutional neural network aimed to discriminate dark matter (dark trident scattering) from 
 neutrino interactions and from cosmic-ray muons. DM-CNN repurposes the MPID architecture to 
-train a binary classifier. Analogously to MPID, this network receives 512x512 LArTPC images and returns the probability
+train a binary classifier. Analogously to MPID, this network receives 512x512 LArTPC images. The CNN eturns the probability
 of the image containing either a dark trident interaction or a background interaction. 
 
 
@@ -24,14 +24,21 @@ Container link: TBD
 0. Download the container 
 1. Clone this repo 
 2. Initialize the singularity container with 
-3. Setup dependencies and MPID core: 
+3. Setup dependencies and MPID core: source setup_larcv2_dm.sh 
 
 # Training:
 0. Setup config file according to your needs in ./cfg/simple_config.cfg 
-1. Change input/output paths in /uboone/train_DM-CNN.py 
-2. python ./uboone/train_DM-CNN.py 
+2. python ./uboone/train_DM-CNN.py -a training file -b test_file -o output/directory/ -w weights/directory 
 
 # Inference:
 0. Change input/output paths in /uboone/inference_DM-CNN.py 
-1. python ./uboone/inference_DM-CNN.py 
+1. python ./uboone/inference_DM-CNN.py -i input_file -c input_csv 
+
+# Event display: 
+
+We can also use the LArCV tools to create event displays 
+of the images we feed to the CNN. 
+
+# Occlusion analysis:
+1.- python ./uboone/occlusion_analysis_CNN.py 
 
