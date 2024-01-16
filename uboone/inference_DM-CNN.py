@@ -127,8 +127,8 @@ def InferenceCNN(input_file, input_csv):
     plt.xlabel("Signal score")
     plt.grid()
     plt.legend(loc='upper right')
-    plt.savefig(output_dir + output_tag + file_name + "_DM-CNN_signal_score_distribution_" + tag + ".png")
-    plt.savefig(output_dir + output_tag + file_name + "_DM-CNN_signal_score_distribution_" + tag + ".pdf")
+    plt.savefig(output_dir + file_name + "_DM-CNN_signal_score_distribution_" + tag + ".png")
+    plt.savefig(output_dir + file_name + "_DM-CNN_signal_score_distribution_" + tag + ".pdf")
     return 0 
  
 
