@@ -123,7 +123,7 @@ def InferenceCNN(input_file, input_csv):
 
     # Generate score distribution plot 
     dp=df[df['signal_score'] >= 0.]
-    plt.hist(dp['signal_score'], bins = 40, alpha=0.9, label=output_tag,histtype='bar')
+    plt.hist(dp['signal_score'], bins = 40, alpha=0.9, label=file_name,histtype='bar')
     plt.xlabel("Signal score")
     plt.grid()
     plt.legend(loc='upper right')
