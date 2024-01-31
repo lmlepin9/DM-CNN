@@ -1,7 +1,7 @@
-# DM-CNN: Dark Matter Classifier based on the MPID CNN 
+# DM-CNN: Dark Matter - Liquid Argon Interaction Classifier
 
-Convolutional neural network aimed to discriminate dark matter (dark trident scattering) from 
-neutrino interactions and from cosmic-ray muons. DM-CNN repurposes the MPID architecture to 
+Convolutional neural network aimed to discriminate dark matter interactions with liquid argon (dark trident scattering) from 
+neutrino interactions and from cosmic-ray muons. DM-CNN repurposes the MPID package to 
 train a binary classifier. Analogously to MPID, this network receives 512x512 LArTPC images. The CNN returns the probability
 of the image containing either a dark trident interaction or a background interaction. 
 
@@ -32,7 +32,7 @@ Container link: TBD
 
 # Inference:
 0. Declare paths in ./cfg/inference_config_binary.cfg 
-1. python ./uboone/inference_DM-CNN.py -i input_file -c input_csv 
+1. python ./uboone/inference_DM-CNN.py
 
 # Event display: 
 
