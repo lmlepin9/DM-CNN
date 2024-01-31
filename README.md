@@ -46,7 +46,7 @@ of the images we feed to the CNN.
 
 A key part of performing a HEP analysis using deep learning tools is to understand
 what features are meaningful for the DL model. One strategy to evaluate what pixels
-are important to the CNN is to use a occlusion analysis (see arXiv:1311.2901). In this repo we include
+are important to the CNN is to use a occlusion analysis (see [arXiv:1311.2901](https://arxiv.org/abs/1311.2901)). In this repo we include
 an script to perform an occlusion analysis over the larcv input images. 
 
 0. Declare paths and occlusion box size in ./cfg/occlusion_config.cfg 
