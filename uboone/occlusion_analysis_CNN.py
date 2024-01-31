@@ -1,4 +1,5 @@
 import os, sys, ROOT
+import getopt, time
 import uproot as np                                                    
 import numpy as np
 import pandas as pd
@@ -19,6 +20,7 @@ from torch.utils.data import DataLoader, TensorDataset
 from mpid_data import mpid_data_binary
 from mpid_net import mpid_net_binary, mpid_func
 from lib.config import config_loader
+from lib.utility import get_fname
 
 
 plt.ioff()
@@ -32,9 +34,28 @@ def add_mask(input_tensor):
 
 
 
-def score_plot(score_map, tag, title,vmin, vmax, cmap_input="gnuplot_r"):
-    output_dir = "/hepgpu6-data1/lmlepin/outputs/"
-    
+def score_plot(score_map,output_dir, tag, title,vmin, vmax, cmap_input="gnuplot_r"):
+
+    '''
+    This function creates a occlusion score map
+    and prints it into png and pdf files.
+
+    It normalizes the input map provided the minimum 
+    and maximum scores obtained for the input image
+
+
+    Parameters: 
+
+    score_mape: torch tensor containing the map score
+    output_dir: output_directory to store the maps
+    tag: name of the input file
+    title: string declaring if signal or background map
+    vmin: minimum score of the map
+    vmax: maximum score of the map
+    cmap_input = matplotlib colormap 
+
+    '''
+
     fig, ax = plt.subplots(1,1,figsize=(20,20),dpi=200)
     pos = ax.imshow(score_map.transpose(),origin="lower", cmap=cmap_input, vmin=vmin, vmax=vmax)     
     ax.set_xlabel("%s Score Map"%title, fontsize=35,labelpad=20)
@@ -45,23 +66,39 @@ def score_plot(score_map, tag, title,vmin, vmax, cmap_input="gnuplot_r"):
     plt.savefig(output_dir + "occlusion_test_{}_{}_map.png".format(tag,title),bbox_inches="tight")
     plt.savefig(output_dir + "occlusion_test_{}_{}_map.pdf".format(tag,title),bbox_inches="tight")
 
+    print "Output file: " + "occlusion_test_{}_{}_map.pdf".format(tag,title)
 
-def RunOcclusion(input_file,input_entry,occlusion_size=4,normalized=True):
+
+def RunOcclusion(input_entry):
     MPID_PATH = os.path.dirname(mpid_data_binary.__file__)+"/../cfg"
-    CFG = os.path.join(MPID_PATH,"inference_config_binary.cfg")
+    CFG = os.path.join(MPID_PATH,"occlusion_config.cfg")
     cfg  = config_loader(CFG)
     os.environ["CUDA_DEVICE_ORDER"]="PCI_BUS_ID"
     os.environ["CUDA_VISIBLE_DEVICES"]=cfg.GPUID
-    weight_file="/hepgpu6-data1/lmlepin/CNN_weights/binary_cosmics_FULL_weights/mpid_model_COSMICS_FULL_20210819-08_34_PM_epoch_4_batch_id_581_labels_2_title_0.001_AG_GN_final_2_classes_step_8441.pwf"
+    input_file = cfg.input_file
+    output_dir = cfg.output_dir
+    occlusion_size = cfg.occlusion_size
+    normalized=cfg.normalization 
+    weight_file=cfg.weight_file 
+    print "\n"
+
+    # Obtain file name without path and without extension 
+    file_name = get_fname(input_file)
+
+
     train_device = 'cuda' if torch.cuda.is_available() else 'cpu'
+
+    # Configure MPID core 
     mpid = mpid_net_binary.MPID()
     mpid.cuda()
     mpid.load_state_dict(torch.load(weight_file, map_location=train_device))
     mpid.eval()
+
+    # Load dataset 
     test_data = mpid_data_binary.MPID_Dataset(input_file,"image2d_image2d_binary_tree", train_device)
     test_loader = DataLoader(dataset=test_data, batch_size= 1 , shuffle=True)
 
-    ### Scanning occlusion 
+    # Scanning occlusion 
     occlusion_step = occlusion_size
     entry_start=input_entry 
     entries=1
@@ -73,18 +110,6 @@ def RunOcclusion(input_file,input_entry,occlusion_size=4,normalized=True):
         
         score = nn.Sigmoid()(mpid(input_image.cuda()))
     
-
-        output_dir = "/hepgpu6-data1/lmlepin/outputs/"
-        fig, ax= plt.subplots(1,1,figsize=(22,22),dpi=200)
-        ax.imshow(input_image.cpu()[0][0], cmap='jet')
-        ax.set_xlim(100,500)
-        ax.set_ylim(100,500)
-        ax.tick_params(top=0, bottom=0, left=0, right=0, labelleft=0, labelbottom=0)
-        ax.text(50,50, "Signal score: %.3f"%score.cpu().detach().numpy()[0][0],color="white",fontsize=53)
-        plt.savefig(output_dir + "test_occlusion_PLANE.png")
-
-
-        
         score_map_signal = np.full([512-occlusion_step, 512-occlusion_step], score.cpu().detach().numpy()[0][0])
         score_map_background = np.full([512-occlusion_step, 512-occlusion_step], score.cpu().detach().numpy()[0][1])
 
@@ -136,13 +161,20 @@ def RunOcclusion(input_file,input_entry,occlusion_size=4,normalized=True):
         vmax_background_final  = np.max(score_map_background)
         
 
-    image_tag = "run1_NuMI_nu_overlay_larcv_cropped.root_{}".format(input_entry)
-    score_plot(score_map_signal_norm,image_tag,"Signal",vmin_signal_final,vmax_signal_final,cmap_input='gnuplot_r')
-    score_plot(score_map_background_norm, image_tag, "Background",vmin_background_final,vmax_background_final)
+    image_tag = file_name + "_ENTRY_{}".format(input_entry)
+    score_plot(score_map_signal_norm, output_dir, image_tag,"Signal",vmin_signal_final,vmax_signal_final,cmap_input='gnuplot_r')
+    score_plot(score_map_background_norm,output_dir, image_tag, "Background",vmin_background_final,vmax_background_final)
 
 
+if __name__ == "__main__":
+    entry = None
+    argv = sys.argv[1:]
+    try:
+        opts, args = getopt.getopt(argv,"n:")
+    except:
+        print("Error...")
 
-
-# Run occlusion 
-base_dir = "/hepgpu6-data1/lmlepin/datasets/larcv/run1_samples/"
-RunOcclusion(base_dir + "run1_NuMI_nu_overlay_larcv_cropped.root",200,occlusion_size=40,normalized=True)
+    for opt, arg in opts:
+            if opt in ['-n']: 
+                entry = arg
+    RunOcclusion(int(entry))

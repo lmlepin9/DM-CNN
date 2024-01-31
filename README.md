@@ -18,7 +18,7 @@ PyTorch
 MPID was originally built using python 2.7 and PyTorch (V1.0.1). All the dependencies 
 have been setup by Rui An within a singularity container.
 
-Container link: TBD 
+Container link: Mail the author 
 
 # Setup:
 0. Download the container 
@@ -39,6 +39,16 @@ Container link: TBD
 We can also use the LArCV tools to create event displays 
 of the images we feed to the CNN. 
 
+0. Declare display parameters and paths in ./cfg/print_image_config.cfg
+1. python ./uboone/print_image_with_score.py -n entry_number
+
 # Occlusion analysis:
-1.- python ./uboone/occlusion_analysis_CNN.py 
+
+A key part of performing a HEP analysis using deep learning tools is to understand
+what features are meaningful for the DL model. One strategy to evaluate what pixels
+are important to the CNN is to use a occlusion analysis (see arXiv:1311.2901). In this repo we include
+an script to perform an occlusion analysis over the larcv input images. 
+
+0. Declare paths and occlusion box size in ./cfg/occlusion_config.cfg 
+1.- python ./uboone/occlusion_analysis_CNN.py -n entry_number 
 

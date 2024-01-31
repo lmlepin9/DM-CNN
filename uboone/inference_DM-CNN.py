@@ -123,6 +123,7 @@ def InferenceCNN():
     plt.figure()
 
     # Generate score distribution plot 
+    # This is a prelminary plot for quick diagnostics 
     dp=df[df['signal_score'] >= 0.]
     plt.hist(dp['signal_score'], bins = 40, alpha=0.9, label=file_name,histtype='bar')
     plt.xlabel("Signal score")

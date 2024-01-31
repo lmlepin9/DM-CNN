@@ -26,8 +26,7 @@ import pandas as pd
 
 
 
-def PrintImage(input_file,ENTRY,output_dir,
-            score_label=True,logit=False,data=False,colorbar_included=False,logo=False):
+def PrintImage(ENTRY):
 
     '''
     Function that creates event displays of 
@@ -38,31 +37,34 @@ def PrintImage(input_file,ENTRY,output_dir,
 
 
     Obligatory arguments:
-    input_file: full path to larcv file
     ENTRY: entry number of the event to print
-    output_dir: full path to output directory 
 
-    Optional arguments:
-    score_label: set to False to not include signal score 
-    logit: set to True to calculate the logit of event signal score
-    data: set to true if sample is NuMI data
-    colorbar_included: set to True to include colorbar
-    logo: set to True to include uboone logo 
 
     Returns: N/A 
 
     ''' 
 
-    file_name = get_fname(input_file)
+
 
     MPID_PATH = os.path.dirname(mpid_data_binary.__file__)+"/../cfg"
-    CFG = os.path.join(MPID_PATH,"inference_config_binary.cfg")
+    CFG = os.path.join(MPID_PATH,"print_image_config.cfg")
     cfg  = config_loader(CFG)
     os.environ["CUDA_DEVICE_ORDER"]="PCI_BUS_ID"
     os.environ["CUDA_VISIBLE_DEVICES"]=cfg.GPUID
     weight_file = cfg.weight_file
     output_dir = cfg.output_dir  
+    input_file = cfg.input_file 
+    score_label = cfg.score_label
+    colorbar_included = cfg.colorbar
+    data = cfg.data 
+    logit = cfg.logit 
+    logo = cfg.logo
 
+    print "\n"
+    print "Processing entry: ",ENTRY
+    
+    # Obtain file name without path and without extension 
+    file_name = get_fname(input_file)
 
     # Get image of event  
     train_device = 'cuda' if torch.cuda.is_available() else 'cpu'
@@ -135,32 +137,28 @@ def PrintImage(input_file,ENTRY,output_dir,
     # Create output file name 
     output_name_base = file_name + "_ENTRY_" + str(ENTRY) 
     if(colorbar_included):
-        ouput_name_pdf = output_name_base +  "_colorbar.png"
-        ouput_name_png = output_name_base +  "_colorbar.pdf"
+        output_name_png = output_name_base +  "_colorbar.png"
+        output_name_pdf = output_name_base +  "_colorbar.pdf"
     else:
-        ouput_name_pdf = output_name_base +  ".png"
-        ouput_name_png = output_name_base +  ".pdf"
+        output_name_png= output_name_base +  ".png"
+        output_name_pdf = output_name_base +  ".pdf"
 
-    plt.savefig(output_dir + ouput_name_png,bbox_inches="tight")
-    plt.savefig(output_dir + ouput_name_pdf,bbox_inches="tight")
+    plt.savefig(output_dir + output_name_png,bbox_inches="tight")
+    plt.savefig(output_dir + output_name_pdf,bbox_inches="tight")
+
+    print "Output file: ",output_name_pdf
 
 
 
 if __name__ == "__main__":
-    input_file = None 
     entry = None
-    output_dir = None 
     argv = sys.argv[1:]
     try:
-        opts, args = getopt.getopt(argv,"i:n:o:")
+        opts, args = getopt.getopt(argv,"n:")
     except:
         print("Error...")
 
     for opt, arg in opts:
-            if opt in ['-i']: 
-                input_file = arg 
-            elif opt in ['-n']:
+            if opt in ['-n']: 
                 entry = arg
-            elif opt in ['-o']:
-                output_dir = arg
-    PrintImage(input_file,int(entry),output_dir)
+    PrintImage(int(entry))
