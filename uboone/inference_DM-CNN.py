@@ -30,14 +30,10 @@ from lib.config import config_loader
 from lib.utility import get_fname 
 
 
-def InferenceCNN(input_file, input_csv):
+def InferenceCNN():
     '''
       Perform inference using a trained DM-CNN model
-      Arguments:
-
-        input_file: set of 512x512 images
-        input_csv: csv file containing per-event info 
-
+      the parameters are obtained from a config file 
       returns:
         None 
     '''
@@ -49,7 +45,12 @@ def InferenceCNN(input_file, input_csv):
     train_device = 'cuda' if torch.cuda.is_available() else 'cpu'
 
 
+    input_file = cfg.input_file 
+    input_csv = cfg.input_csv 
+
+    # Obtain name without extension of the file 
     file_name = get_fname(input_file)
+
     print("\n")
     print("Running DM-CNN inference...")
     print("Input larcv: "+input_file)
@@ -136,17 +137,4 @@ def InferenceCNN(input_file, input_csv):
 
 
 if __name__ == "__main__":
-    input_file = None 
-    input_csv = None
-    argv = sys.argv[1:]
-    try:
-        opts, args = getopt.getopt(argv,"i:c:")
-    except:
-        print("Error...")
-
-    for opt, arg in opts:
-            if opt in ['-i']: 
-                input_file = arg 
-            elif opt in ['-c']:
-                input_csv = arg
-    InferenceCNN(input_file, input_csv)
+    InferenceCNN()

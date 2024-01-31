@@ -2,7 +2,7 @@
 
 Convolutional neural network aimed to discriminate dark matter (dark trident scattering) from 
 neutrino interactions and from cosmic-ray muons. DM-CNN repurposes the MPID architecture to 
-train a binary classifier. Analogously to MPID, this network receives 512x512 LArTPC images. The CNN eturns the probability
+train a binary classifier. Analogously to MPID, this network receives 512x512 LArTPC images. The CNN returns the probability
 of the image containing either a dark trident interaction or a background interaction. 
 
 
@@ -27,11 +27,11 @@ Container link: TBD
 3. Setup dependencies and MPID core: source setup_larcv2_dm.sh 
 
 # Training:
-0. Setup config file according to your needs in ./cfg/simple_config.cfg 
-2. python ./uboone/train_DM-CNN.py -a training file -b test_file -o output/directory/ -w weights/directory 
+0. Declare training parameters and paths in ./cfg/training_config.cfg 
+2. python ./uboone/train_DM-CNN.py 
 
 # Inference:
-0. Change input/output paths in /uboone/inference_DM-CNN.py 
+0. Declare paths in ./cfg/inference_config_binary.cfg 
 1. python ./uboone/inference_DM-CNN.py -i input_file -c input_csv 
 
 # Event display: 

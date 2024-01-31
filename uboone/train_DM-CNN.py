@@ -33,33 +33,44 @@ from mpid_net import mpid_net_binary, mpid_func_binary
 
 
 
-def TrainCNN(train_file, test_file, output_dir, weights_dir):
+def TrainCNN():
     '''
     Function that trains the DM-CNN model
     It stores the values of the trainig metrics
     in a csv file that will be created in output_dir.
     The weights of the CNN will be stored in weights_dir
 
+    The input files, output directories and settings for this 
+    function are given in a config file
+
     '''
-    print("Inputs given: ")
-    print("Training file: ", train_file)
-    print("Test file: ", test_file)
-    print("Output directory: ", output_dir)
-    print("Weights directory: ", weights_dir)
-    print("\n")
 
     # Get config file 
     print("Reading config file...\n")
     BASE_PATH = os.path.realpath(__file__)
     BASE_PATH = os.path.dirname(BASE_PATH)
-    CFG = os.path.join(BASE_PATH,"../cfg","simple_config.cfg")
+    CFG = os.path.join(BASE_PATH,"../cfg","training_config.cfg")
     cfg  = config_loader(CFG)
 
     os.environ["CUDA_DEVICE_ORDER"]="PCI_BUS_ID"
     os.environ["CUDA_VISIBLE_DEVICES"]=cfg.GPUID
 
-    # Title
+    # Get configs
     title = cfg.name
+    output_dir = cfg.output_directory
+    train_file = cfg.input_train
+    test_file = cfg.input_test 
+    weights_dir = cfg.weights_directory 
+    SEED = cfg.seed_number 
+
+    print("Inputs given: ")
+    print("Training file: ", train_file)
+    print("Test file: ", test_file)
+    print("Output directory: ", output_dir)
+    print("Weights directory: ", weights_dir)
+    print("Seed?: ", cfg.seed)
+    print("\n")
+
 
 
     # Create file to store training metrics 
@@ -70,20 +81,24 @@ def TrainCNN(train_file, test_file, output_dir, weights_dir):
     # String used to create files that will contain the CNN weights
     CNN_weights = weights_dir + "DM-CNN_model_{}_epoch_{}_batch_id_{}_labels_{}_title_{}_step_{}.pwf"
 
-
-    #if (len(sys.argv) > 1) : title = sys.argv[1]
-
-    SEED = 1
     cuda = torch.cuda.is_available()
 
-    # # For reproducibility
-    # torch.manual_seed(SEED)
-
-    # if cuda:
-    #     torch.cuda.manual_seed(SEED)
+    # For reproducibility
+    if(cfg.seed and cuda):
+        print("Using seed number: ", SEED)
+        torch.cuda.manual_seed(SEED)
+    elif(cfg.seed and not cuda):
+        print("Using seed number: ", SEED)
+        torch.manual_seed(SEED)
+    else:
+        print("A seed has not been defined...")
+        print("\n")
 
     print ("There are {} GPUs available".format(torch.cuda.device_count()))
     train_device = 'cuda' if torch.cuda.is_available() else 'cpu'
+
+    # Note: "image2d_image2d_binary_tree" is the name of the data product stored in the LArCV-ROOT file
+    # If your images are labeled under a different data product name change this accordingly. 
 
     # Training data
     train_data = mpid_data_binary.MPID_Dataset(train_file, "image2d_image2d_binary_tree", train_device, plane=0, augment=False)
@@ -173,24 +188,4 @@ def TrainCNN(train_file, test_file, output_dir, weights_dir):
 
 
 if __name__ == '__main__':
-    train_file = None
-    test_file = None
-    output_dir = None
-    weights_dir = None 
-    argv = sys.argv[1:]
-    try:
-        opts, args = getopt.getopt(argv,"a:b:o:w:")
-    except:
-        print("Error...")
-
-    for opt, arg in opts:
-            if opt in ['-a']: 
-                train_file = arg 
-            elif opt in ['-b']:
-                test_file = arg
-            elif opt in ['-o']:
-                output_dir = arg
-            elif opt in ['-w']:
-                weights_dir = arg
-
-    TrainCNN(train_file, test_file, output_dir, weights_dir)
+    TrainCNN()

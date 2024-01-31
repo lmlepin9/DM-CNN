@@ -40,6 +40,7 @@ def PrintImage(input_file,ENTRY,output_dir,
     Obligatory arguments:
     input_file: full path to larcv file
     ENTRY: entry number of the event to print
+    output_dir: full path to output directory 
 
     Optional arguments:
     score_label: set to False to not include signal score 
@@ -65,6 +66,8 @@ def PrintImage(input_file,ENTRY,output_dir,
 
     # Get image of event  
     train_device = 'cuda' if torch.cuda.is_available() else 'cpu'
+    # Note: The data product name is hardcoded to "image2d_image2d_binary_tree"
+    # You need to change this if your files use a different name 
     test_data = mpid_data_binary.MPID_Dataset(input_file,"image2d_image2d_binary_tree", train_device)
     test_loader = DataLoader(dataset=test_data, batch_size= 1 , shuffle=True)
     input_image = test_data[ENTRY][0].view(-1,1,512,512)
