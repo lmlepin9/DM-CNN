@@ -7,11 +7,11 @@ export LC_ALL=C
 
 # Set up ROOT
 echo "Setting up ROOT..."
-source /usr/local/bin/thisroot.sh
+source /usr/dependencies/root/bin/thisroot.sh
 
 # Set up larcv2 
 echo "Setting up larcv2..."
-source /usr/local/share/larcv2/configure.sh
+source /usr/dependencies/larcv2/configure.sh
 
 # This directory points to where the DM-CNN repo is 
 echo "Setting up DM-CNN..."

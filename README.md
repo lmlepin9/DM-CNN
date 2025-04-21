@@ -9,16 +9,16 @@ of the image containing either a dark trident interaction or a background intera
 <img src="https://github.com/lmlepin9/DM-CNN/blob/master/lib/run1_NuMI_beamon_larcv_cropped_ENTRY_4204_colorbar_logit.png" width="500">
 
 ## Dependecies
-[LArCV2](https://github.com/LArbys/LArCV),
+[LArCV2 v2.0.0](https://github.com/DeepLearnPhysics/larcv2),
 ROOT,
 PyTorch
 
-## Singularity container
+## Docker container
 
 MPID was originally built using python 2.7 and PyTorch (V1.0.1). All the dependencies 
-have been setup by Rui An within a singularity container.
+have been setup in this container:
 
-Container link: Mail the author 
+[MPID Container](https://hub.docker.com/repository/docker/lmlepin9/lm_larcv2/general)
 
 ## Setup
 0. Download the container 
