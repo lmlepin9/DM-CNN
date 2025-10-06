@@ -15,10 +15,9 @@ PyTorch
 
 ## Docker container
 
-MPID was originally built using python 2.7 and PyTorch (V1.0.1). All the dependencies 
-have been setup in this container:
+MPID was originally built using python 2.7 and PyTorch (V1.0.1). I have made an updated version with Python3 and CUDA 11.0 which should work on any modern GPU (hopefully!). A container with all the dependencies can be found here:
 
-[MPID Container](https://hub.docker.com/repository/docker/lmlepin9/lm_larcv2/general)
+[LArCV-Py3 Container](https://hub.docker.com/repository/docker/lmlepin9/larcv2_py3/general)
 
 ## Setup
 0. Download the container 
