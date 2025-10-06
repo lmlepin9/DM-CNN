@@ -23,12 +23,14 @@ have been setup in this container:
 ## Setup
 0. Download the container 
 1. Clone this repo 
-2. Initialize the singularity container with 
+2. Activate the docker container
 3. Setup dependencies and MPID core: source setup_larcv2_dm.sh 
 
 ## Training
 0. Declare training parameters and paths in ./cfg/training_config.cfg 
 2. python ./uboone/train_DM-CNN.py 
+
+Note: You might want to run this command with nohup, so the training will continue even if you close your terminal 
 
 ## Inference
 0. Declare paths in ./cfg/inference_config_binary.cfg 
