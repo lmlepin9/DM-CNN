@@ -7,7 +7,7 @@ export LC_ALL=C
 
 # Set up ROOT
 echo "Setting up ROOT..."
-source /usr/dependencies/root/bin/thisroot.sh
+source /opt/root/bin/thisroot.sh
 
 # Set up larcv2 
 echo "Setting up larcv2..."

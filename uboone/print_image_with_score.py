@@ -60,14 +60,15 @@ def PrintImage(ENTRY):
     logit = cfg.logit 
     logo = cfg.logo
 
-    print "\n"
-    print "Processing entry: ",ENTRY
+    print("\n")
+    print("Processing entry: ",ENTRY)
     
     # Obtain file name without path and without extension 
     file_name = get_fname(input_file)
 
     # Get image of event  
     train_device = 'cuda' if torch.cuda.is_available() else 'cpu'
+    print("Train device: ", train_device)
     # Note: The data product name is hardcoded to "image2d_image2d_binary_tree"
     # You need to change this if your files use a different name 
     test_data = mpid_data_binary.MPID_Dataset(input_file,"image2d_image2d_binary_tree", train_device)
@@ -146,7 +147,7 @@ def PrintImage(ENTRY):
     plt.savefig(output_dir + output_name_png,bbox_inches="tight")
     plt.savefig(output_dir + output_name_pdf,bbox_inches="tight")
 
-    print "Output file: ",output_name_pdf
+    print("Output file: ",output_name_pdf)
 
 
 

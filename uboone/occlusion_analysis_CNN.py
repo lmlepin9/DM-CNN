@@ -37,7 +37,7 @@ def add_mask(input_tensor):
 def score_plot(score_map,output_dir, tag, title,vmin, vmax, cmap_input="gnuplot_r"):
 
     '''
-    This function creates a occlusion score map
+    This function creates an occlusion score map
     and prints it into png and pdf files.
 
     It normalizes the input map provided the minimum 
@@ -66,7 +66,7 @@ def score_plot(score_map,output_dir, tag, title,vmin, vmax, cmap_input="gnuplot_
     plt.savefig(output_dir + "occlusion_test_{}_{}_map.png".format(tag,title),bbox_inches="tight")
     plt.savefig(output_dir + "occlusion_test_{}_{}_map.pdf".format(tag,title),bbox_inches="tight")
 
-    print "Output file: " + "occlusion_test_{}_{}_map.pdf".format(tag,title)
+    print("Output file: " + "occlusion_test_{}_{}_map.pdf".format(tag,title))
 
 
 def RunOcclusion(input_entry):
@@ -80,7 +80,7 @@ def RunOcclusion(input_entry):
     occlusion_size = cfg.occlusion_size
     normalized=cfg.normalization 
     weight_file=cfg.weight_file 
-    print "\n"
+    print("\n")
 
     # Obtain file name without path and without extension 
     file_name = get_fname(input_file)
@@ -103,7 +103,7 @@ def RunOcclusion(input_entry):
     entry_start=input_entry 
     entries=1
 
-    for ENTRY in xrange(entry_start, entry_start + entries):
+    for ENTRY in range(entry_start, entry_start + entries):
         input_image = test_data[ENTRY][0].view(-1,1,512,512)
         input_image[0][0][input_image[0][0] > 500] = 500
         input_image[0][0][input_image[0][0] < 10 ] = 0
@@ -115,8 +115,8 @@ def RunOcclusion(input_entry):
 
         clone_image = input_image.cpu().clone()
         
-        for x in xrange(0 + occlusion_step, 512 - occlusion_step):
-            for y in xrange(0 + occlusion_step,512 - occlusion_step):
+        for x in range(0 + occlusion_step, 512 - occlusion_step):
+            for y in range(0 + occlusion_step,512 - occlusion_step):
                 clone_image = input_image.cpu().clone()
 
                 if(clone_image[0][0][x,y]==0):
